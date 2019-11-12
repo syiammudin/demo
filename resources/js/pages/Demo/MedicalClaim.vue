@@ -110,6 +110,7 @@
                           <el-upload class="upload-demo" :action="url + '/upload'" :on-success="onProses">
                               <el-button size="mini"  onloadedmetadata=""><i class="fa fa-file"></i> Upload</el-button>
                           </el-upload>
+                            <span v-if="errors.attachment" class="text-danger"> {{ errors.attachment[0] }}</span>
                         </div>
                       </div>
                       <div class="form-group">
@@ -214,7 +215,7 @@ import popupAttachment from '../app/popupAttachment'
     },
     data() {
         return {
-            name : AUTH_LOGIN_NAME, formReject : false ,
+            name : AUTH_LOGIN_NAME, formReject : false , errors : [],
             link : '', popupAttachmentDialog : false ,
             tableShow : true ,
             input:{} ,
@@ -245,7 +246,8 @@ import popupAttachment from '../app/popupAttachment'
               alert('Succes Save')
             }
           })
-          .catch((err) => {
+          .catch((error) => {
+            this.errors = error.response.data.errors;
             console.log(err);
           })
           .finally(() => {

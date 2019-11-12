@@ -85,7 +85,7 @@ class DemoNdaController extends Controller
 
   public function reject(Request $request, $id ){
     $input = $request->all() ;
-    $input['status'] = 6 ;
+    $input['status'] = 4 ;
 
     $update = Nda::find($id) ;
     $update->update($input) ;

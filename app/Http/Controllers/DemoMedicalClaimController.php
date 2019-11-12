@@ -20,6 +20,9 @@ class DemoMedicalClaimController extends Controller
   }
 
   public function store(Request $request){
+    $request->validate([
+        'attachment' => 'required',
+    ]);
     $input = $request->all() ;
     $input['user_id'] = auth::user()->id ;
     $input['status'] = 0 ;
@@ -85,7 +88,7 @@ class DemoMedicalClaimController extends Controller
 
   public function reject(Request $request, $id ){
     $input = $request->all() ;
-    $input['status'] = 6 ;
+    $input['status'] = 4 ;
 
     $update = MedicalClaim::find($id) ;
     $update->update($input) ;
