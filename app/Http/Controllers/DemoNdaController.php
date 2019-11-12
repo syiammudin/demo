@@ -149,4 +149,9 @@ class DemoNdaController extends Controller
     return $pdf->stream();
   }
 
+  public function destroy($id){
+    MedicalClaim::find($id)->delete() ;
+    return 'ok';
+  }
+
 }

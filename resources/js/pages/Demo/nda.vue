@@ -41,14 +41,17 @@
                                     <i class="fa fa-angle-double-down"></i>
                                   </span>
                                   <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item v-if='role != 1 && (scope.row.status > 0 && scope.row.status < 3)'>
+                                      <a ><i class="fa fa-times"></i> Nothing Action </a>
+                                    </el-dropdown-item>
                                     <a @click="checked(scope.row.id)">
                                       <el-dropdown-item v-if="role == 2 && (scope.row.status == 0 || role == 4)">
                                         <i class="fa fa-check"></i> Submit
                                       </el-dropdown-item>
                                     </a>
-                                    <a :href="url+'/detail/'+scope.row.id" target="_blank">
+                                    <a :href="url+'/detail/'+scope.row.id" target="_blank" v-if='scope.row.status == 3'>
                                       <el-dropdown-item >
-                                        <i class="fa fa-check"></i> Detail Attachment
+                                        <i class="fa fa-file-o"></i> Detail Attachment
                                       </el-dropdown-item>
                                     </a>
                                     <a @click="edit(scope.row)">
@@ -161,7 +164,7 @@
 
 
     <el-dialog title="History Request" :visible.sync="historyModal" >
-      <el-steps :active="parseInt(status)" :finish-status="status == 4 ? 'error' : 'success'" >
+      <el-steps :active="parseInt(status)" :finish-status="status == 4 ? 'error' : 'success'" v-if="historyModal == true">
           <el-step title="Submit" v-if="status >= 1"  description="User"></el-step>
           <el-step title="Accept" v-if="status >= 2"  description="Manager"></el-step>
           <el-step title="Approve" v-if="status >= 3 && status != 6"  description="HRD" ></el-step>

@@ -146,4 +146,9 @@ class DemoMedicalClaimController extends Controller
       }
   }
 
+  public function destroy($id){
+    MedicalClaim::find($id)->delete() ;
+    return 'ok';
+  }
+
 }
