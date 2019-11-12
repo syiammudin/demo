@@ -44,8 +44,8 @@
                                       <a ><i class="fa fa-times"></i> Nothing Action </a>
                                     </el-dropdown-item>
                                     <a @click="checked(scope.row.id)">
-                                      <el-dropdown-item v-if="role == 2 && (scope.row.status == 0 || role == 4)">
-                                        <i class="fa fa-check"></i> Submit
+                                      <el-dropdown-item v-if="role == 2 && (scope.row.status == 0 || scope.row.status == 4)">
+                                        <i class="fa fa-check"></i>  {{ scope.row.status == 0 ? 'Submit' : 'Re-Submit' }} 
                                       </el-dropdown-item>
                                     </a>
                                     <a @click="edit(scope.row)">
