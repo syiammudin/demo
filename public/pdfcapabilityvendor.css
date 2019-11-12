@@ -1,0 +1,70 @@
+input[type=checkbox] { display: inline; }
+.fix{
+    padding : 0px !important ;
+    margin : 0px !important ;
+}
+.noborder{
+    border-top : 0px solid white !important ;
+}
+.withborder{
+    border-bottom : 1px solid grey !important ;
+}
+
+.left{
+    float: left ;
+}
+.right{
+    float : right;
+}
+
+.font10{
+    font-size: 10pt
+}
+.font9{
+    font-size: 9pt
+}
+.font8{
+    font-size: 8pt
+}
+
+.body{
+    font-family: "myriad" ;
+}
+
+.header-text {
+    font-size : 7pt;
+}
+
+    p { page-break-after: always; }
+    .footer { position: fixed; bottom: 10px; border-top: 1px solid; font-size: 6pt}
+    .pagenum:before { content: counter(page); }
+
+#header {
+    font-family: "myriad" ;
+    font-size : 10pt;
+    position: fixed;
+    top: -20px;
+    width: 100%;
+    text-align: right;
+    margin-right: 10px;
+    transform-origin: 50% 50%;
+    z-index: -1000;
+}
+
+#header-img {
+    font-family: "myriad" ;
+    font-size : 10pt;
+    position: fixed;
+    top: -20px;
+    width: 100%;
+    text-align: left;
+    margin-left: 9px;
+    transform-origin: 50% 50%;
+    z-index: -1000;
+}
+
+.header{
+    font-family: arial ;
+    font-weight: bold ;
+    font-style: italic;
+}

@@ -1,0 +1,1136 @@
+<template>
+<div v-if="role_request == 4">
+    <div class="col-lg-12  z-index-41" v-if="input.status == undefined || input.status == 0 || input.status == 6">
+        <div class="panel panel-default  ">
+            <div class="panel-heading no-border clearfix">
+                <h1 class="page-title">Special Capability Request</h1>
+            </div>
+            <div class="panel-body">
+                <ul class="nav nav-tabs">
+                    <li :class="mainform === true ? 'active' : ''"><a aria-expanded="true" @click="mainForm()" >Main Form</a></li>
+                    <li :class="shopability === true ? 'active' : ''"><a aria-expanded="true" @click="abilityForm()" >Shop Ability</a></li>
+                    <li :class="personel === true ? 'active' : ''"><a aria-expanded="true" @click="personelForm()" >Personel</a></li>
+                    <li :class="sheetlist === true ? 'active' : ''"><a aria-expanded="true" @click="sheetlistForm()" >Sheet List</a></li>
+                    <li :class="tools === true ? 'active' : ''"><a aria-expanded="true" @click="toolsForm()" >Tools</a></li>
+                    <li :class="partlist === true ? 'active' : ''"><a aria-expanded="true" @click="partlistForm()" >Part List</a></li>
+                    <li :class="note === true ? 'active' : ''" v-if="input.status == 6"><a aria-expanded="false" @click="Note()">Note Resubmit</a></li>
+                </ul>
+                <br>
+                <div class="form-horizontal">
+                    <!-- main  form  -->
+                    <div v-show="mainform">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"> Request Number </label>
+                            <div class="col-sm-9">
+                                <input type="text" v-if="idRequest != 0" v-model="input.request_number"   placeholder="Number of Request" readonly  class="form-control">
+                                <input type="text" v-else="idRequest != 0" v-model="input.request_number = RequestNumber"   placeholder="Number of Request" readonly  class="form-control">
+                                <span v-if="err.request_number" class="text-danger"> {{ err.request_number[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Request Type</label>
+                            <div class="col-lg-9">
+                                <div class="col-md-2 radio radio-replace radio-success">
+                                    <input type="radio" disabled v-model="input.request_type" name="radios2" id="radio6" value="Add" checked="checked">
+                                    <label for="radio6">Add</label>
+                                </div>
+                                <div class="col-md-2 radio radio-replace radio-success">
+                                    <input type="radio" disabled v-model="input.request_type" name="radios2" id="radio6" value="Change" checked="checked">
+                                    <label for="radio6">Add Change</label>
+                                </div>
+                                <div class="col-md-2  radio radio-replace radio-success">
+                                    <input type="radio"disabled  v-model="input.request_type" name="radios2" id="radio6" value="Delete" checked="checked">
+                                    <label for="radio6">Delete</label>
+                                </div>
+                                <span v-if="err.request_type" class="text-danger"> {{ err.aircraft_type[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Part Number</label>
+                            <div class="col-sm-9">
+                                <el-select :disabled="input.request_type == 'Change' || input.request_type == 'Delete' " v-model="input.part_number" multiple filterable clearable placeholder="Select Part Number" >
+                                    <el-option v-for="item in PartNumber" :key="item.part_number"
+                                        :label="item.part_number"
+                                        :value="item.part_number">
+                                    </el-option>
+                                </el-select>
+                                <!-- <input type="text" class="form-control" v-model="input.part_number" placeholder="Number of Document"> -->
+                                <span v-if="err.part_number" class="text-danger" > {{ err.part_number[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Engine Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" v-model="input.engine_name" placeholder="Engine Name">
+                                <span v-if="err.engine_name" class="text-danger"> {{ err.engine_name[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Vendor Manufacturer</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" v-model="input.vendor_manufacturer" placeholder="Vendor Manufacturer">
+                                <span v-if="err.vendor_manufacturer" class="text-danger"> {{ err.vendor_manufacturer[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Aircraft Type</label>
+                            <div class="col-sm-9">
+                                <el-select v-model="input.aircraft_type" filterable clearable placeholder="Select Aircraft Type" >
+                                    <el-option v-for="item in AircraftType" :key="item.code"
+                                        :label="item.aircraft_type"
+                                        :value="item.aircraft_type">
+                                    </el-option>
+                                </el-select>
+                                <span v-if="err.aircraft_type" class="text-danger"> {{ err.aircraft_type[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">ATA Chapter</label>
+                            <div class="col-sm-9">
+                                <input type="tel" v-mask="'##-##-##'"  class="form-control" v-model="input.ata_chapter" placeholder="Atta Chapter">
+                                <span v-if="err.ata_chapter"  class="text-danger"> {{ err.ata_chapter[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Workshop</label>
+                            <div class="col-sm-9">
+                                <el-select  onloadedmetadata="" v-model="input.workshop" clearable placeholder="Select Request type" >
+                                    <el-option v-for="wr in Workshop " :key="wr.workshop" :label="wr.workshop" :value="wr.workshop"> </el-option>
+                                </el-select>
+                                <!-- <input type="text" class="form-control" v-model="input.workshop" placeholder="Workshop"> -->
+                                <span v-if="err.workshop" class="text-danger"> {{ err.workshop[0] }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">FOR RATING</label>
+                            <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+                                <div class="col-md-3" v-for='f, i in rating' >
+                                    <input type="checkbox"  :disabled="input.request_type == 'Change' || (rating[f.name_of_rating] == null  && input.request_type == 'Delete') || (rating[f.name_of_rating] == true  && input.request_type == 'Add Change')" class="form-control"
+                                    v-model="f.rating">
+                                    <label for="checkbox6">{{ f.name_of_rating }} </label>
+                                    <el-select :disabled="input.request_type == 'Add Change' || input.request_type == 'Change'" v-if="f.rating == true"  v-model="f.value" filterable clearable placeholder="Select Rating" >
+                                        <el-option v-for="item in $store.state.ForRating.find(t => t.id == f.id).desciption.split(',')" :key="item"
+                                            :label="item"
+                                            :value="item">
+                                        </el-option>
+                                        <input v-if="rating[f.descrip] == true" type="hidden" class="form-control"  v-model="f.name_of_rating">
+                                    </el-select>
+                                </div>
+                                <div class="col-lg-12">
+                                    <span v-if="err.for_rating" class="text-danger"> {{ err.for_rating[0] }}</span>
+                                </div>
+                            </div>
+                            <!-- <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+                                <div class="col-md-3" v-for='f, i in ForRating' >
+                                    <input type="checkbox"  :disabled="input.request_type == 'Change' || (rating[f.name_of_rating] == null  && input.request_type == 'Delete') || (rating[f.name_of_rating] == true  && input.request_type == 'Add Change')" class="form-control"  v-model="rating[f.name_of_rating]">
+                                    <label for="checkbox6">{{ f.name_of_rating }} </label>
+                                    <el-select :disabled="input.request_type == 'Add Change' || input.request_type == 'Change'" v-if="rating[f.name_of_rating] == true"  v-model="rating[i]" filterable clearable placeholder="Select Rating" >
+                                        <el-option v-for="item in $store.state.ForRating.find(t => t.id == f.id).desciption.split(',')" :key="item"
+                                            :label="item"
+                                            :value="item">
+                                        </el-option>
+                                        <input v-if="rating[f.name_of_rating] == true" type="hidden" class="form-control"  v-model="rating[i+'_name'] =  f.name_of_rating">
+                                    </el-select>
+                                </div>
+                                <div class="col-lg-12">
+                                    <span v-if="err.for_rating" class="text-danger"> {{ err.for_rating[0] }}</span>
+                                </div>
+                            </div> -->
+
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 control-label" > Approval Request to Cary Out : </label>
+                            <div class="col-md-9 checkbox checkbox-replace checkbox-success">
+                                <div class="col-md-3 ">
+                                    <input type="checkbox" class="form-control" v-model='aproval_request_carry_out.inspection'>
+                                    <label for="checkbox6">Inspection </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox"  class="form-control" v-model='aproval_request_carry_out.testing'>
+                                    <label for="checkbox6">Testing </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox"  class="form-control" v-model='aproval_request_carry_out.repair'>
+                                    <label for="checkbox6">Repair </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" class="form-control" v-model='aproval_request_carry_out.modification'>
+                                    <label for="checkbox6">Modification  </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" class="form-control" v-model='aproval_request_carry_out.overhauled'>
+                                    <label for="checkbox6">Overhauled </label>
+                                </div>
+                                <div class="col-lg-12">
+                                    <span v-if="err.aproval_request_carry_out" class="text-danger"> {{ err.aproval_request_carry_out[0] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Manager Statement </label>
+                            <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+                                <p >
+                                    I certify that my department has capability to maintain the above mention items, according to
+                                    AMO Manual 1.9.21 MOE 1.9.5/ RSQM 1.9.2 requirement and items with Cross (X) sign below
+                                    have been provided.
+                                </p>
+                                <div class="col-md-3">
+                                    <input type="checkbox" class="form-control" v-model='input.facilities'>
+                                    <label for="checkbox6">Facilities </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox"  class="form-control" v-model='input.special_tools'>
+                                    <label for="checkbox6">Special Tools </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox"  class="form-control" v-model='input.qualified_personel'>
+                                    <label for="checkbox6">Qualified Personnel</label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" class="form-control" v-model='input.approved_data'>
+                                    <label for="checkbox6">Approved Data </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" class="form-control" v-model='input.appropriate_rating'>
+                                    <label for="checkbox6">Appropriate Rating</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="checkbox" class="form-control" v-model='input.special_equipment'>
+                                    <label for="checkbox6">Special Equipment/Test Equipment</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Attachment</label>
+                            <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name Document</th>
+                                            <th>
+                                                <el-upload class="upload-demo" :action="url + '/attachment'" :on-success="succesAttach"
+                                                :show-file-list="false" >
+                                                <el-button size="mini" type="primary"><i class="fa fa-file"></i> Upload</el-button>
+                                            </el-upload>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tr v-for="a, i in list_attachment">
+                                    <td>{{ a }}</td>
+                                    <td> <a @click='delattachment(i)'><i class="fa fa-trash"></i> </a> </td>
+                                </tr>
+                            </table>
+                            </div>
+                        </div>
+                        <div class="line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">MANUAL REVISION (Maintenance Manual)</label>
+                            <div class="col-sm-9">
+                                <div class="col-md-4">
+                                    ATA
+                                    <input type="tel" v-mask="'##-##-##'"  class="form-control" v-model='manual_revision.maintenance_manual_ata'>
+                                </div>
+                                <div class="col-md-4">
+                                    Doc Number
+                                    <input type="text" class="form-control" v-model='manual_revision.maintenance_manual_doc_no'>
+                                </div>
+                                <div class="col-md-4">
+                                    Date Update
+                                    <el-date-picker
+                                          v-model="manual_revision.maintenance_manual_update"
+                                          type="date"
+                                          placeholder="Date Update" value-format="yyyy-MM-dd">
+                                        </el-date-picker>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">MANUAL REVISION (Illustrated Parts Catalog)</label>
+                            <div class="col-sm-9">
+                                <div class="col-md-4">
+                                    ATA
+                                    <input type="tel" v-mask="'##-##-##'"  class="form-control" v-model='manual_revision.catalog_ata'>
+                                </div>
+                                <div class="col-md-4">
+                                    Doc Number
+                                    <input type="text" class="form-control" v-model='manual_revision.catalog_doc_no'>
+                                </div>
+                                <div class="col-md-4">
+                                    Date Update
+                                    <el-date-picker
+                                          v-model="manual_revision.catalog_update"
+                                          type="date"
+                                          placeholder="Date Update  " value-format="yyyy-MM-dd">
+                                        </el-date-picker>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- shop ability form -->
+                    <div v-show="shopability">
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div class=" form-group">
+                                    <label class="col-sm-2 control-label">SHOP ABILITY NUMBER</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" v-model="input.shop_ability_number" placeholder="Number Ability">
+                                        <span v-if="err.shop_ability_number" class="text-danger"> {{ err.shop_ability_number[0] }}</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">NDT METHOD</label>
+                                    <div class="col-sm-10">
+                                        <select v-model="input.ndt_method" class="form-control" placeholder="NDT METHOD" >
+                                            <option label="Fluorescent Penetrant Inspection" value="Fluorescent Penetrant Inspection"></option>
+                                            <option label="Eddy Current" value="Eddy Current"></option>
+                                            <option label="Magnetic Particle Inspection" value="Magnetic Particle Inspection"></option>
+                                            <option label="Ultrasonic Inspection" value="Ultrasonic Inspection"></option>
+                                            <option label="X – Ray Inspection" value="X – Ray Inspection"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">REFERENCES </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" v-model="input.reference" placeholder="Nomenclature">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">ABILITY</label>
+                                    <div class="col-sm-10">
+                                        <div class="col-md-2 radio radio-replace radio-success">
+                                            <input type="radio" v-model="input.ability" class="form-control" name="ability" id="ability" value="On Wing" checked="checked">
+                                            <label for="ability">On Wing</label>
+                                        </div>
+                                        <div class="col-md-2  radio radio-replace radio-success">
+                                            <input type="radio" v-model="input.ability" class="form-control" name="ability" id="ability" value="Removed" checked="checked">
+                                            <label for="ability">Removed</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">SPECIAL FACILITY REQUIREMENT</label>
+                                    <div class="col-sm-10">
+                                        <select v-model="input.special_facility" class="form-control" placeholder="NDT METHOD" >
+                                            <option label="Dark Room" value="Dark Room"></option>
+                                            <option label="Exposure Room" value="Exposure Room"></option>
+                                            <option label="Not Required" value="Not Required"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="line-dashed"></div>
+                        <div class="table-responsive">
+                            <label for="">EQUIPMENT & TOOL</label>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Document required</th>
+                                        <th colspan="2">Test Equipment Required</th>
+                                        <th colspan="2">Special Tool Required</th>
+                                        <th rowspan="2">Remark</th>
+                                        <th rowspan="2"> <el-button @click="document_ability()"  size="mini" icon="fa fa-plus" round > Add </el-button></th>
+                                    </tr>
+                                    <tr>
+                                        <th>Part Number</th>
+                                        <th>Part Name</th>
+                                        <th>Part Number</th>
+                                        <th>Part Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="d in list_document_ability">
+                                        <td><input class="my-input" v-model="d.document_required" placeholder="Document Required"></td>
+                                        <td><input class="my-input" v-model="d.test_equipment_part_number" placeholder="PART NUMBER"></td>
+                                        <td><input class="my-input" v-model="d.test_equipment_part_name" placeholder="PART NAME"></td>
+                                        <td><input class="my-input" v-model="d.special_tool_part_number" placeholder="PART NUMBER"></td>
+                                        <td><input class="my-input" v-model="d.special_tool_part_name" placeholder="PART NAME"></td>
+                                        <td><input class="my-input" v-model="d.remark" placeholder="Remark"></td>
+                                        <td><a @click="delDocumentAbility(d)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="line-dashed"></div>
+                        <div class="form-group">
+                        <label class="control-label">QUALIFIED PERSONEL</label>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Nopeg</th>
+                                        <th>Level</th>
+                                        <th> <el-button @click="QualifiedPersonelDialog = true, type_personel = 'qualified_personel'" size="mini" icon="fa fa-plus" round>Add</el-button></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for='c in list_qualified_personel'>
+                                        <td>{{ c.name }}</td>
+                                        <td>{{ c.id_number }}</td>
+                                        <td>{{ c.level }}</td>
+                                        <td> <a @click="delQualifiedPersonel(c)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-group">
+                        <label class="control-label">MATERIAL</label>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Part Name</th>
+                                        <th>Part Number</th>
+                                        <th>Remark</th>
+                                        <th> <el-button @click="addConsumableMaterial()" size="mini" icon="fa fa-plus" round>Add</el-button></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for='c in list_consumable_material'>
+                                        <td><input type="text" class="my-input" v-model="c.part_name" placeholder="Description"> </td>
+                                        <td><input type="text" class="my-input" v-model="c.part_number" placeholder="Part Number"> </td>
+                                        <td><input type="text" class="my-input" v-model="c.remark" placeholder="Remark"> </td>
+                                        <td> <a @click="delConsumableMaterial(c)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Persone Form  -->
+                    <div v-show="personel">
+                        <el-button @click="personelDialog = true"  size="mini" icon="fa fa-plus" round > Add Personel </el-button>
+                        <el-button @click="formImport('personel')"  size="mini" icon="fa fa-file-excel-o " round > Import </el-button>
+                        <div class="table-responsive">
+                            <table class="table table-hover ">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>ID Number</th>
+                                        <th>Job Title</th>
+                                        <th>Auth No or Stamp Holder</th>
+                                        <th>Unit</th>
+                                        <th>Scope Competency</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="ap, i in list_personel">
+                                        <td>{{ ap.name }}</td>
+                                        <td>{{ ap.id_number }}</td>
+                                        <td>{{ ap.job_title }}</td>
+                                        <td>{{ ap.auth_no_stamp_holder }}</td>
+                                        <td>{{ ap.unit }}</td>
+                                        <td>{{ ap.scope_competency }}</td>
+                                        <td> <a @click="delPersonel(ap, i)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sheetlist list -->
+                    <div v-show='sheetlist'>
+                        <el-button @click="addSheetlist()"  size="mini" icon="fa fa-plus" round > Add Sheet List </el-button>
+                        <el-button @click="formImport('sheetlist')"  size="mini" icon="fa fa-file-excel-o " round > Import </el-button>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover ">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>PD Sheet No.</th>
+                                        <th>Desciption</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="d, i in list_sheetlist">
+                                        <td><input class="my-input" v-model="d.category" placeholder="Category"></td>
+                                        <td><input class="my-input" v-model="d.pd_sheet_number" placeholder="Sheet Number"></td>
+                                        <td><input class="my-input" v-model="d.description" placeholder="Description"></td>
+                                        <td> <a @click="delSheetlist(d, i)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tools list -->
+                    <div v-show='tools'>
+                        <el-button @click="ToolsDialog = true"  size="mini" icon="fa fa-plus" round > Add Tools </el-button>
+                        <el-button @click="formImport('tools')"  size="mini" icon="fa fa-file-excel-o " round > Import </el-button>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover ">
+                                <thead>
+                                    <tr>
+                                        <th>Part Name</th>
+                                        <th>Tool Name</th>
+                                        <th>QTY</th>
+                                        <th>Availability</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="d, i in list_tools">
+                                        <td><input class="my-input" v-model="d.part_name" placeholder="Part Name"></td>
+                                        <td><input class="my-input" v-model="d.tool_name" placeholder="Tool Name"></td>
+                                        <td><input class="my-input" v-model="d.qty" placeholder="Qty"></td>
+                                        <td><input class="my-input" v-model="d.availability" placeholder="Availability"></td>
+                                        <td> <a @click="delTools(d, i)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- partlist list -->
+                    <div v-show='partlist'>
+                        <el-button @click="addPartlist()"  size="mini" icon="fa fa-plus" round > Add partlist </el-button>
+                        <el-button @click="formImport('partlist')"  size="mini" icon="fa fa-file-excel-o " round > Import </el-button>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover ">
+                                <thead>
+                                    <tr>
+                                        <th>Part Name</th>
+                                        <th>Exampe of Partname</th>
+                                        <th>Vendor Name</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="d, i in list_partlist">
+                                        <td><input class="my-input" v-model="d.part_name" placeholder="Part Name"></td>
+                                        <td><input class="my-input" v-model="d.example_part_number" placeholder="Exampe of Part Name"></td>
+                                        <td><input class="my-input" v-model="d.vendor_name" placeholder="Vendor Name"></td>
+                                        <td> <a @click="delPartlist(d, i)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div v-show='note' class="form-horizontal">
+                        <el-button @click="NoteDialog = true "  size="mini" icon="fa fa-file-excel-o " round > Import </el-button>
+                        <div class="table-responsive">
+                            <table class="table table-hover ">
+                                <thead>
+                                    <tr>
+                                        <th>Attachment</th>
+                                        <th>Note</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="d , i in list_note">
+                                        <td>{{ d.attachment }} </td>
+                                        <td>{{ d.note }} </td>
+                                        <td> <a @click="delAttachmentResubmit(d, i)"><i class="icon-trash"></i> </a> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="line-dashed"></div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-9">
+                            <button class="btn btn-primary" @click="save()" >Save to Draft</button>
+                            <!-- <button class="btn btn-danger" @click="cancel" >Cancel</button> -->
+                            <router-link :to="{ name: 'request' }" class="btn btn-danger">Cancel </router-link>
+                            <button class="btn btn-success" @click="submit()" >Save And Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- dialog personel -->
+    <el-dialog title="Personel List" :visible.sync="personelDialog" >
+        <PersonelList @add="addPersonel" :list_personel="list_personel" />
+    </el-dialog>
+
+    <el-dialog title="Personel List" :visible.sync="QualifiedPersonelDialog" >
+        <PersonelList  @addQualifiedPersonel="addQualifiedPersonel" :type_personel="type_personel"/>
+    </el-dialog>
+
+    <el-dialog title="Tools " :visible.sync="ToolsDialog" >
+        <tools @add="addTools" />
+    </el-dialog>
+    <el-dialog title="Note Attachment " :visible.sync="NoteDialog" >
+        <attachment :id="type" :type="'special'" @add="addAttachmentResubmit" />
+    </el-dialog>
+
+    <!-- dialog import -->
+    <el-dialog :title=" 'Import ' + imports.type " :visible.sync="importFileDialog" >
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="" class="col-md-3">Import File From excel</label>
+                <div class="col-md-9">
+                    <input type="file" v-on:change="onFileChange" style="display:block"class="form-control" ref="fileInput" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="" class="col-md-3"></label>
+                <div class="col-md-9">
+                    <button @click='ImportFile()' class="btn btn-primary btn-sm">Import</button>
+                </div>
+            </div>
+        </div>
+        <div class="line-dashed"></div>
+        For format import excel, you can  <a :href="base_url+'document_n_import/special/sampel_import/'+imports.type+'.xlsx'" target="_blank">download here</a>
+    </el-dialog>
+</div>
+</template>
+
+<script>
+import PersonelList from '../../../components/PersonelList'
+import tools from '../../../components/tools'
+import attachment from './attachmentResubmit'
+export default {
+    components: { PersonelList, tools, attachment},
+    props: ['type'] ,
+    mounted(){
+        this.getData();
+    },
+    watch : {
+        'input.workshop' : function (v, o){
+            if(!v){
+                return
+            }
+            this.input.shop_maintenance = v
+        },
+
+        'input.aircraft_type': function(v, o) {
+            if (!v) {
+                return
+            }
+            this.ability['AIRCRAFT TYPE'] = this.input.aircraft_type ;
+        },
+        'input.ata_chapter': function(v, o) {
+            if (!v) {
+                return
+            }
+            this.ability['ATA CHAPTER'] = this.input.ata_chapter ;
+        },
+        'input.part_number': function(v, o) {
+            if (!v) {
+                return
+            }
+            this.ability['PART NUMBER'] = this.input.part_number.join(', ') ;
+        }
+    },
+    computed : {
+        requestType() { return this.$store.state.requestTypes.find(t => t.id == 4) },
+        AircraftType() { return this.$store.state.AircraftType } ,
+        RequestNumber() { return this.$store.state.RequestNumber } ,
+        idRequest(){ return this.type },
+        PartNumber() { return this.$store.state.PartNumber } ,
+        Workshop() { return this.$store.state.Workshop } ,
+        ForRating() { return this.$store.state.ForRating } ,
+    },
+    created(){
+        this.$store.state.type_of_request = 'special'
+        this.$store.commit('getRequestType');
+        this.$store.commit('getAircraftType')
+        this.$store.commit('getRequestNumber');
+        this.$store.commit('getPartNumber');
+        this.$store.commit('getForRating');
+        this.$store.commit('getWorkshop');
+    },
+    data(){
+        return {
+            url : BASE_URL +'submit_special',base_url :BASE_URL, auth_id : AUTH_LOGIN_ID, err : [] ,
+            data : [], input : {}, rating : this.$store.state.ForRating ,ability : {}, ToolsDialog : false ,
+            mainform : true , shopability : false, personel : false , sheetlist : false, tools : false, partlist : false,
+            personelDialog : false , importFileDialog : false , imports : {},
+            list_document_ability : [], list_attachment: [], list_consumable_material : [], role_request : ROLE_REQUEST,
+            list_personel : [] , list_sheetlist : [] , list_tools : [] , list_partlist : [] , manual_revision : {},
+            note : false , list_note : [], NoteDialog : false ,
+            list_qualified_personel : [] , type_personel : '', QualifiedPersonelDialog : false, aproval_request_carry_out : {}
+
+        }
+    },
+    methods : {
+
+        getData(){
+            if(this.idRequest != 0 ){
+                axios.get(this.url+'/'+this.idRequest).then((res) => {
+                    this.input = res.data.special_request
+                    this.input.status = res.data.status
+                    this.input.part_number = res.data.special_request.part_number.split('|')
+                    this.input.request_id = this.idRequest
+                    this.input.request_type = res.data.request_type
+                    this.input.request_number = res.data.request_number
+                    this.input.shop_maintenance = this.input.workshop
+                    this.input.shop_ability_number = res.data.special_shop_ability.shop_ability_number
+                    this.input.ndt_method = res.data.special_shop_ability.ndt_method
+                    this.input.reference = res.data.special_shop_ability.reference
+                    this.input.ability = res.data.special_shop_ability.ability
+                    this.input.special_facility = res.data.special_shop_ability.special_facility
+                    if(res.data.special_request.aproval_request_carry_out !=  null){
+                        this.aproval_request_carry_out = JSON.parse(res.data.special_request.aproval_request_carry_out)
+                    }
+                    console.log(res.data.special_shop_ability.equipment_tools);
+
+                    this.list_note = res.data.attachment_resubmit
+                    this.input.status = res.data.status
+                    if(res.data.special_request.for_rating != null){
+                      this.rating = JSON.parse(res.data.special_request.for_rating)
+                    }
+                    this.manual_revision = JSON.parse(res.data.special_request.manual_revision)
+
+                    if(res.data.special_request.attachment != null){
+                        this.list_attachment = res.data.special_request.attachment.split('|')
+                    }
+
+                    this.list_document_ability = JSON.parse(res.data.special_shop_ability.equipment_tools)
+                    this.list_qualified_personel = JSON.parse(res.data.special_shop_ability.qualified_personel)
+                    this.list_consumable_material = JSON.parse(res.data.special_shop_ability.consumable_material)
+
+                    this.list_personel = res.data.special_personel
+                    this.list_sheetlist = res.data.special_sheet_list
+                    this.list_tools = res.data.special_tools
+                    this.list_partlist = res.data.special_part_list
+
+                    this.list_attachment = res.data[0].engine_request.attachment.split('|')
+                })
+                .catch((err) => {
+
+                })
+            }else{
+                this.input.request_type = 'Add'
+            }
+        },
+        formImport(type){
+            this.imports.type = type
+            this.importFileDialog = true
+        },
+        succesAttach(response, file, fileList){
+            this.list_attachment.push(response.file)
+        },
+        delattachment(d){
+            this.list_attachment.splice(d, 1)
+        },
+        onFileChange(e){
+            let files = e.target.files || e.dataTransfer.files;
+            if (!files.length)
+                return;
+            this.fileexcel = e.target.files[0];
+        },
+        ImportFile(){
+            this.load = true
+            const config = { headers: { 'content-type': 'multipart/form-data' } }
+            var data = new FormData();
+            data.append('excelfile', this.fileexcel);
+            data.append('type', this.imports.type);
+            const loading = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(0, 0, 0, 0.7)' });
+
+            axios.post(this.url+'/importExcel', data, config ).then((res) => {
+                if(res.data.status == 1){
+                    this.importFileDialog = false
+                    if(res.data.type == 'personel'){
+                        for (var i = 0; i < res.data.data.length; i++) {
+                                var obj = {
+                                    name:res.data.data[i].name,
+                                    id_number: res.data.data[i].id_number,
+                                    job_title: res.data.data[i].job_title,
+                                    auth_no_stamp_holder: res.data.data[i].auth_no_stamp_holder,
+                                    unit: res.data.data[i].unit,
+                                    scope_competency: res.data.data[i].scope_competency,
+                                }
+                                this.list_personel.push(obj);
+                        }
+                    }
+                    if(res.data.type == 'sheetlist'){
+                        for (var i = 0; i < res.data.data.length; i++) {
+                                var obj = {
+                                    category:res.data.data[i].category,
+                                    pd_sheet_number: res.data.data[i].pd_sheet_number,
+                                    desciption: res.data.data[i].desciption,
+                                }
+                                this.list_sheetlist.push(obj);
+                        }
+                    }
+                    if(res.data.type == 'tools'){
+                        for (var i = 0; i < res.data.data.length; i++) {
+                                var obj = {
+                                    part_name:res.data.data[i].part_name,
+                                    tool_name: res.data.data[i].tool_name,
+                                    qty: res.data.data[i].qty,
+                                    availability: res.data.data[i].availability,
+                                }
+                                this.list_tools.push(obj);
+                        }
+                    }
+                    if(res.data.type == 'partlist'){
+                        for (var i = 0; i < res.data.data.length; i++) {
+                                var obj = {
+                                    part_name:res.data.data[i].part_name,
+                                    example_part_number: res.data.data[i].example_part_number,
+                                    vendor_name: res.data.data[i].vendor_name,
+                                }
+                                this.list_partlist.push(obj);
+                        }
+                    }
+
+                    const input = this.$refs.fileInput
+                    input.type = 'text'
+                    input.type = 'file'
+
+                    loading.close()
+                }else{
+                    loading.close()
+                    alert('Import Gagal')
+                }
+            }).catch((err) => {
+                console.log(err);
+                loading.close()
+                this.$alert("Import Failed, Format Excel not Match", 'Warning', { confirmButtonText: 'OK', });
+            })
+        },
+        save(){
+            this.input.master_request_id = this.requestType.id
+            this.input.equipment_tools =  JSON.stringify(this.list_document_ability)
+            this.input.consumable_material = JSON.stringify(this.list_consumable_material)
+            this.input.qualified_personel = JSON.stringify(this.list_qualified_personel)
+            this.input.personel = this.list_personel
+            this.input.sheetlist = this.list_sheetlist
+            this.input.tools = this.list_tools
+            this.input.partlist = this.list_partlist
+            this.input.attachment = this.list_attachment
+            this.input.for_rating = JSON.stringify(this.ForRating)
+            this.input.manual_revision = JSON.stringify(this.manual_revision)
+            this.input.aproval_request_carry_out = JSON.stringify(this.aproval_request_carry_out)
+
+            const loading = this.$loading({  lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(0, 0, 0, 0.7)' });
+            axios.post(this.url, this.input).then((res) => {
+                console.log(res.data);
+                this.$router.push('/special_request');
+                this.input = {}
+                loading.close();
+            })
+            .catch((error) => {
+                this.err = error.response.data.errors; loading.close()
+                loading.close();
+            })
+        },
+        submit(){
+            this.input.master_request_id = this.requestType.id
+            this.input.equipment_tools =  JSON.stringify(this.list_document_ability)
+            this.input.consumable_material = JSON.stringify(this.list_consumable_material)
+            this.input.qualified_personel = JSON.stringify(this.list_qualified_personel)
+
+            this.input.personel = this.list_personel
+            this.input.sheetlist = this.list_sheetlist
+            this.input.tools = this.list_tools
+            this.input.partlist = this.list_partlist
+            this.input.attachment = this.list_attachment
+            this.input.for_rating = JSON.stringify(this.rating)
+            this.input.manual_revision = JSON.stringify(this.manual_revision)
+            this.input.aproval_request_carry_out = JSON.stringify(this.aproval_request_carry_out)
+
+            const sheetlist = this.list_sheetlist.filter(cek => cek.category == null || cek.pd_sheet_number == null || cek.description == null )
+            const tools = this.list_tools.filter(cek => cek.part_name == null || cek.tool_name == null || cek.qty == null || cek.availability == null  )
+            const partlist = this.list_partlist.filter(cek => cek.part_name == null || cek.example_part_number == null || cek.vendor_name == null )
+            const cek_consumable_material = this.list_consumable_material.filter(cek => cek.part_number == null || cek.desciption == null || cek.qty == null || cek.remark == 0)
+            const documentability = this.list_document_ability.filter(cek => cek.document_required == null || cek.test_equipment_part_number == null || cek.test_equipment_part_name == null
+                                                                            || cek.special_tool_part_number == null || cek.special_tool_part_name == null|| cek.remark == null)
+            if(sheetlist.length >= 1){
+                this.$alert("Please Fill data Sheetlist ", 'Warning', { confirmButtonText: 'OK', }); this.sheetlistForm()
+            }
+            if(tools.length >= 1){
+                this.$alert("Please Fill data Tools", 'Warning', { confirmButtonText: 'OK', }); this.toolsForm()
+            }
+            if(partlist.length >= 1){
+                this.$alert("Please Fill data in Partlist", 'Warning', { confirmButtonText: 'OK', }); this.partlistForm()
+            }
+            if(cek_consumable_material.length >= 1){
+                this.$alert("Please Fill data in Consumable Material", 'Warning', { confirmButtonText: 'OK', }); this.abilityForm()
+            }
+            if(documentability.length >= 1){
+                this.$alert("Please Fill data in Document Required", 'Warning', { confirmButtonText: 'OK', }); this.abilityForm()
+            }
+
+            if(this.list_personel.length == 0){
+                this.$alert("Personel Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.personelForm()
+            }
+            if(this.list_sheetlist.length == 0){
+                this.$alert("Sheelist Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.sheetlistForm()
+            }
+            if(this.list_tools.length == 0){
+                this.$alert("Tools Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.toolsForm()
+            }
+            if(this.list_partlist.length == 0){
+                this.$alert("Partlist Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.partlistForm()
+            }
+            if(this.list_consumable_material.length == 0){
+                this.$alert("Consumable Material Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.abilityForm()
+            }
+            if(this.list_document_ability.length == 0){
+                this.$alert("Document Required Can't be null", 'Warning', { confirmButtonText: 'OK', }); this.abilityForm()
+            }
+
+            if(this.list_personel.length != 0 && this.list_sheetlist.length != 0 &&  this.list_tools.length != 0 && this.list_partlist.length != 0 && this.list_consumable_material.length != 0
+               && this.list_document_ability.length != 0  && sheetlist.length == 0 && tools.length == 0 && partlist.length == 0 && cek_consumable_material.length == 0 && documentability.length == 0 ){
+                const loading = this.$loading({  lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(0, 0, 0, 0.7)' });
+                axios.post(this.url+'/submit', this.input).then((res) => {
+                    console.log(res.data);
+                    this.input = {}
+                    this.$router.push('/special_request');
+                    loading.close();
+                })
+                .catch((error) => {
+                    this.err = error.response.data.errors; loading.close()
+                    loading.close();
+                })
+            }
+        },
+        document_ability(p){
+            this.list_document_ability.push({
+                document_required :"",
+                test_equipment_part_name: '',
+                test_equipment_part_number: '',
+                special_tool_part_name: '',
+                special_tool_part_number: '',
+                remark: "",
+            });
+        },
+        delDocumentAbility(d, i){
+            this.list_document_ability.splice(i, 1)
+        },
+        addConsumableMaterial(p){
+            this.list_consumable_material.push({
+                part_number:"",
+                desciption: '',
+                qty: '',
+                remark: '',
+            });
+        },
+        delConsumableMaterial(d, i){
+            this.list_consumable_material.splice(i, 1)
+        },
+
+        // add personel
+        addPersonel(p){
+            if (!!this.list_personel.find(lp => lp.id_number == p.personel_number)) {
+                return
+            }
+            this.$message({  type: 'success', message: 'Personel  Added' });
+
+            this.list_personel.push({
+                name: p.full_name,
+                id_number: p.personel_number,
+                job_title : p.position_name,
+                auth_no_stamp_holder: p.gmf_auth_number,
+                unit: p.unit_code,
+                scope_competency: p.scp_descrip
+            });
+            this.personel = {}
+        },
+        delPersonel(d, i){
+            if(d.id == undefined ){
+                this.list_personel.splice(i, 1)
+            }else{
+                this.$confirm('Do You Want Delete this data ?', 'Warning', {  confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning'}).then(() => {
+                      axios.delete(this.url+'/'+ d.id+'?type=personel').then((res) => {
+                          this.list_personel.splice(i, 1)
+                          this.$message({ type: 'success', message: 'Delete completed' });
+                      })
+                      .catch((err) => {  console.log(err); })
+                }).catch(() => { this.$message({ type: 'info', message: 'Delete canceled' }); });
+            }
+        },
+
+        addQualifiedPersonel(p){
+            if (!!this.list_qualified_personel.find(lp => lp.id_number == p.personel_number)) {
+                return
+            }
+            this.$message({  type: 'success', message: 'Qualified Personel Added' });
+            this.list_qualified_personel.push({
+                name: p.full_name,
+                id_number: p.personel_number,
+                level : p.position_name
+            });
+        },
+
+        delQualifiedPersonel(d, i){
+            this.list_qualified_personel.splice(i, 1)
+        },
+        // add Sheetlist
+        addSheetlist(p){
+            this.list_sheetlist.push({
+                category: "",
+                pd_sheet_number: "",
+                description : "",
+            });
+        },
+
+        delSheetlist(d, i){
+            if(d.id == undefined ){
+                this.list_sheetlist.splice(i, 1)
+            }else{
+                this.$confirm('Do You Want Delete this data ?', 'Warning', {  confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning'}).then(() => {
+                      axios.delete(this.url+'/'+ d.id+'?type=sheetlist').then((res) => {
+                          this.list_sheetlist.splice(i, 1)
+                          this.$message({ type: 'success', message: 'Delete completed' });
+                      })
+                      .catch((err) => {  console.log(err); })
+                }).catch(() => { this.$message({ type: 'info', message: 'Delete canceled' }); });
+            }
+        },
+
+        // add Tools
+        addTools(d){
+            if (!!this.list_tools.find(lt => lt.tool_name == d.DESCRIPTION)) {
+                this.$alert('Tools Already Added, You cant add again', 'warning', { confirmButtonText: 'OK', });
+                return
+            }else{
+                this.$message({
+                  type: 'success',
+                  message: 'Tools Success Added'
+                });
+            }
+            this.list_tools.push({
+                part_name: "",
+                tool_name: d.DESCRIPTION,
+                qty : "",
+                availability : "",
+            });
+        },
+
+        delTools(d, i){
+            if(d.id == undefined ){
+                this.list_tools.splice(i, 1)
+            }else{
+                this.$confirm('Do You Want Delete this data ?', 'Warning', {  confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning'}).then(() => {
+                      axios.delete(this.url+'/'+ d.id+'?type=tools').then((res) => {
+                          this.list_tools.splice(i, 1)
+                          this.$message({ type: 'success', message: 'Delete completed' });
+                      })
+                      .catch((err) => {  console.log(err); })
+                }).catch(() => { this.$message({ type: 'info', message: 'Delete canceled' }); });
+            }
+        },
+
+        // add partlist
+        addPartlist(p){
+            this.list_partlist.push({
+                part_name: "",
+                example_part_number : "",
+                vendor_name : "",
+            });
+        },
+
+        delPartlist(d, i){
+            if(d.id == undefined ){
+                this.list_partlist.splice(i, 1)
+            }else{
+                this.$confirm('Do You Want Delete this data ?', 'Warning', {  confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning'}).then(() => {
+                      axios.delete(this.url+'/'+ d.id+'?type=tools').then((res) => {
+                          this.list_partlist.splice(i, 1)
+                          this.$message({ type: 'success', message: 'Delete completed' });
+                      })
+                      .catch((err) => {  console.log(err); })
+                }).catch(() => { this.$message({ type: 'info', message: 'Delete canceled' }); });
+            }
+        },
+        addAttachmentResubmit(d){
+            this.list_note.push({
+                id : d.id,
+                note : d.note,
+                attachment : d.attachment,
+            });
+            this.NoteDialog = false
+        },
+
+        delAttachmentResubmit(d, i){
+            this.$confirm('Do You Want Delete this data ?', 'Warning', {  confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning'}).then(() => {
+                  axios.delete(this.url+'/'+ d.id+'?type=note_resubmit').then((res) => {;
+                     this.list_note.splice(i, 1)
+                     this.$message({ type: 'success', message: 'Delete completed' });
+                  })
+                  .catch((err) => {
+                      console.log(err);
+                  })
+            }).catch(() => {
+                this.$message({ type: 'info', message: 'Delete canceled' });
+            });
+        },
+        mainForm(){
+            this.mainform = true
+            this.shopability = false
+            this.personel = false
+            this.sheetlist = false
+            this.tools = false
+            this.partlist = false
+            this.note = false
+        },
+        abilityForm(){
+            this.mainform = false
+            this.shopability = true
+            this.personel = false
+            this.sheetlist = false
+            this.tools = false
+            this.partlist = false
+            this.note = false
+        },
+        personelForm(){
+            this.mainform = false
+            this.shopability = false
+            this.personel = true
+            this.sheetlist = false
+            this.tools = false
+            this.partlist = false
+            this.note = false
+        },
+        sheetlistForm(){
+            this.mainform = false
+            this.shopability = false
+            this.personel = false
+            this.sheetlist = true
+            this.tools = false
+            this.partlist = false
+            this.note = false
+        },
+        toolsForm(){
+            this.mainform = false
+            this.shopability = false
+            this.personel = false
+            this.sheetlist = false
+            this.tools = true
+            this.partlist = false
+            this.note = false
+        },
+        partlistForm(){
+            this.mainform = false
+            this.shopability = false
+            this.personel = false
+            this.sheetlist = false
+            this.tools = false
+            this.partlist = true
+            this.note = false
+        },
+        Note(){
+            this.mainform = false
+            this.shopability = false
+            this.personel = false
+            this.sheetlist = false
+            this.tools = false
+            this.partlist = false
+            this.note = true
+        },
+
+    }
+}
+</script>
+
+<style lang="css" scoped>
+.el-select {
+    width: 100%;
+}
+</style>

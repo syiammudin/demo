@@ -1,0 +1,14 @@
+@font-face {
+    font-family: 'Myriad';
+    src: url('./MyriadMM.ttf');
+
+}
+@font-face {
+    font-family: 'Arial-Bold-Italic';
+    src: url('./Arial-Bold-Italic_4264.ttf');
+}
+
+
+body, h1, h2, h3, h4, h5, strong , table, th, span, td,  {
+    font-family: Myriad !important;
+}

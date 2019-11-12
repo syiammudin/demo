@@ -1,0 +1,70 @@
+@extends('layouts.login_temp')
+
+@section('content')
+<div class="col-md-3 col-sm-3 col-xs-3 col-xs-3-form">
+  <form action="{{ route('login') }}" class="custom-form" method="post">
+        @csrf
+    <h4 class="text-center">LOGIN TO YOUR ACCOUNT</h4>
+    <div class="right-border">
+    </div>
+    <div class="left-border">
+    </div>
+
+    <div class="form-group" style="margin-top: 50px">
+      <input id="user"  type="text" autocomplete="off" placeholder="ID Number" class="form-control {{ $errors->has('id_number') ? ' is-invalid' : '' }}" name="id_number" value="{{ old('id_number') }}"  autofocus>
+      @if ($errors->has('id_number'))
+          <span class="text-danger" role="alert">
+              <strong>{{ $errors->first('id_number') }}</strong>
+          </span>
+      @endif
+      <label for="user" class="animated-label">Employee Number</label>
+    </div>
+    <div class="form-group" style="margin-top: 40px">
+      <input  id="pass" type="password" autocomplete="off" placeholder="Password" class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" >
+      @if ($errors->has('password'))
+          <span class="text-danger" role="alert">
+              <strong>{{ $errors->first('password') }}</strong>
+          </span>
+      @endif
+      <label for="pass" class="animated-label">Password</label>
+    </div>
+    <div class="form-group">
+        <!-- <label class="col-sm-2 control-label">Maintenance Area </label> -->
+        <div class="row">
+            <div class="col-md-12 radio radio-replace radio-success">
+                <div class="col-lg-12">
+                    <input type="radio" name="type_login" value="ldap" checked >
+                    <label for="radio6">L-Dap Account</label>
+                </div>
+                <div class="col-lg-12">
+                    <input type="radio" name="type_login" value="aplication"  >
+                    <label for="radio6">Aplication Account</label>
+                </div>
+                @if ($errors->has('type_login'))
+                <span class="text-danger" role="alert">
+                    <strong>{{ $errors->first('type_login') }}</strong>
+                </span>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="submit" style="margin-top:20px;">
+      <button class="btn btn-primary btn-block">LOGIN</button>
+    </div>
+
+    @if(session()->has('message'))
+        <div class="alert alert-success">
+            {{ session()->get('message') }}
+        </div>
+    @endif
+    @if($errors->has('error'))
+        <!-- @if (!$errors->has('type_login')  or !$errors->has('id_number') or !$errors->has('password')) -->
+            <div class="alert alert-danger">
+                {{$errors->first('error')}}
+            </div>
+        <!-- @endif -->
+    @endif
+  </form>
+</div>
+@endsection

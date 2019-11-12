@@ -1,0 +1,550 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\RequestSubmittion ;
+use App\SpecialRequest ;
+use App\SpecialShopAbility ;
+use App\SpecialPersonel ;
+use App\SpecialSheetList ;
+use App\SpecialTools ;
+use App\SpecialPartList ;
+use App\RequestHistory ;
+use App\MasterConfig ;
+use App\Http\Controllers\store\StoreController;
+use App\Http\Requests\SpecialRequestValidation ;
+use Auth ;
+use PDF ;
+use iio\libmergepdf\Driver\Fpdi2Driver;
+use iio\libmergepdf\Merger;
+use iio\libmergepdf\Pages;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SubmitRequest ;
+use App\Mail\ChekedRequest ;
+use App\Mail\NotificationUser ;
+
+class SpecialRequestController extends Controller
+{
+    public function index(Request $request)
+    {
+        if(!empty($request->type)){
+            if(auth::user()->role == 5){
+                $request = RequestSubmittion::with(['SpecialRequest', 'SpecialShopAbility']);
+                $data =$request->whereIn('status', array(3, 8))->where('master_request_id', 4)->orderBy('id','desc')->get();
+            }else{
+                $request = RequestSubmittion::with(['SpecialRequest', 'SpecialShopAbility']);
+                $data = $request->where('status', 4)->where('master_request_id', 4)->orderBy('id','desc')->get();
+            }
+
+        }elseif(empty($request->type)){
+            $request = RequestSubmittion::with(['SpecialRequest', 'SpecialShopAbility']);
+            if(auth::user()->role == 2){
+                $data = $request->where('user_id', auth::user()->id )->where('master_request_id', 4)->orderBy('id','desc')->get();
+            }elseif(auth::user()->role == 5 || auth::user()->role == 6){
+                $data = $request->where('master_request_id', 4)
+                                ->whereIn('status',  array( 4,5,6))
+                                ->orderBy('id','desc')->get();
+            }else{
+                $data = $request->where('status','<>','0')->where('master_request_id', 4)->orderBy('id','desc')->get();
+            }
+        }
+
+        return $data ;
+    }
+
+    public function store(SpecialRequestValidation $request)
+    {
+        $input = $request->all() ;
+        $input['user_id'] = auth::user()->id;
+        $input['status'] = 0;
+        if($request->attachment != null){
+            $input['attachment'] = implode('|',$request->attachment);
+        }else{
+            $input['attachment'] = null ;
+        }
+
+        if($request->part_number){
+            $input['part_number'] = implode('|',$request->part_number) ;
+        }
+
+        $dr = '' ;
+        $stp_name = '' ;
+        $stp_number = '' ;
+        $tep_name = '' ;
+        $tep_number = '' ;
+        $remark = '' ;
+        foreach ($request->document_ability as $value) {
+            $dr .=  $value['document_required']."|" ;
+            $stp_name .= $value['special_tool_part_name'] ."|";
+            $stp_number .=$value['special_tool_part_number']."|" ;
+            $tep_name .= $value['test_equipment_part_name']."|" ;
+            $tep_number .= $value['test_equipment_part_number']."|" ;
+            $remark .= $value['remark']."|" ;
+        }
+        $input['document_required'] = $dr ;
+        $input['special_tool_part_name'] = $stp_name ;
+        $input['special_tool_part_number'] = $stp_number;
+        $input['test_equipment_part_name'] = $tep_name ;
+        $input['test_equipment_part_number'] = $tep_number ;
+        $input['remark'] = $remark ;
+
+        if($request->request_id){
+            SpecialRequest::where('request_submittion_id',$request->request_id)->first()->update($input) ;
+            SpecialShopAbility::where('request_submittion_id',$request->request_id)->first()->update($input) ;
+
+            foreach($request->personel as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialPersonel::create($data) ;
+                }else{
+                    SpecialPersonel::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->sheetlist as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialSheetList::create($data) ;
+                }else{
+                    SpecialSheetList::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->tools as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialTools::create($data) ;
+                }else{
+                    SpecialTools::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->partlist as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialPartList::create($data) ;
+                }else{
+                    SpecialPartList::find($data['id'])->update($data) ;
+                }
+            }
+
+            $request_submittion = 'ok';
+        }else{
+            $request_submittion = RequestSubmittion::create($input) ;
+            $request_submittion->SpecialRequest()->create($input) ;
+            $request_submittion->SpecialShopAbility()->create($input) ;
+            $request_submittion->SpecialPersonel()->createMany($request->personel) ;
+            $request_submittion->SpecialSheetList()->createMany($request->sheetlist) ;
+            $request_submittion->SpecialTools()->createMany($request->tools) ;
+            $request_submittion->SpecialPartList()->createMany($request->partlist) ;
+        }
+
+        if($request_submittion){
+            $res = ['status' => 1, 'message' => 'success'] ;
+        }else{
+            $res = ['status' => 0, 'message' => 'failed'] ;
+        }
+        return $res;
+    }
+
+    public function submit(SpecialRequestValidation $request){
+        $input = $request->all() ;
+        $input['user_id'] = auth::user()->id;
+        $input['status'] = 1;
+        if($request->status == 6){
+            $input['step_request_type'] ='re-Submit' ;
+        }else{
+            $input['step_request_type'] = 'New' ;
+        }
+
+        if($request->attachment != null){
+            $input['attachment'] = implode('|',$request->attachment);
+        }else{
+            $input['attachment'] = null ;
+        }
+        if($request->part_number){
+            $input['part_number'] = implode('|',$request->part_number) ;
+        }
+
+        $dr = '' ;
+        $stp_name = '' ;
+        $stp_number = '' ;
+        $tep_name = '' ;
+        $tep_number = '' ;
+        $remark = '' ;
+        foreach ($request->document_ability as $value) {
+            $dr .=  $value['document_required']."|" ;
+            $stp_name .= $value['special_tool_part_name'] ."|";
+            $stp_number .=$value['special_tool_part_number']."|" ;
+            $tep_name .= $value['test_equipment_part_name']."|" ;
+            $tep_number .= $value['test_equipment_part_number']."|" ;
+            $remark .= $value['remark']."|" ;
+        }
+        $input['document_required'] = $dr ;
+        $input['special_tool_part_name'] = $stp_name ;
+        $input['special_tool_part_number'] = $stp_number;
+        $input['test_equipment_part_name'] = $tep_name ;
+        $input['test_equipment_part_number'] = $tep_number ;
+        $input['remark'] = $remark ;
+
+        if($request->request_id){
+            $input['status'] = 1 ;
+            $input['request_submittion_id'] = $request->request_id ;
+            $input['aproval'] = auth::user()->name ;
+
+            RequestHistory::create($input);
+
+            $submit = RequestSubmittion::find($request->request_id);
+            $submit->update($input) ;
+
+            SpecialRequest::where('request_submittion_id',$request->request_id)->first()->update($input) ;
+            SpecialShopAbility::where('request_submittion_id',$request->request_id)->first()->update($input) ;
+
+            foreach($request->personel as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialPersonel::create($data) ;
+                }else{
+                    SpecialPersonel::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->sheetlist as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialSheetList::create($data) ;
+                }else{
+                    SpecialSheetList::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->tools as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialTools::create($data) ;
+                }else{
+                    SpecialTools::find($data['id'])->update($data) ;
+                }
+            }
+            foreach($request->partlist as $data) {
+                $data['request_submittion_id'] = $request->request_id ;
+                if(empty($data['id'])){
+                    SpecialPartList::create($data) ;
+                }else{
+                    SpecialPartList::find($data['id'])->update($data) ;
+                }
+            }
+
+        }else{
+            $submit = RequestSubmittion::create($input) ;
+            $submit->SpecialRequest()->create($input) ;
+            $submit->SpecialShopAbility()->create($input) ;
+            $submit->SpecialPersonel()->createMany($request->personel) ;
+            $submit->SpecialSheetList()->createMany($request->sheetlist) ;
+            $submit->SpecialTools()->createMany($request->tools) ;
+            $submit->SpecialPartList()->createMany($request->partlist) ;
+            $input['request_submittion_id'] = $submit->id ;
+            $input['aproval'] = auth::user()->name ;
+            RequestHistory::create($input);
+        }
+
+        $data =  RequestSubmittion::with(['RequestHistory','SpecialRequest','SpecialShopAbility','SpecialPersonel',
+                                       'SpecialSheetList','SpecialTools','SpecialPartList'])->find($submit->id) ;
+
+        $qsa = \App\User::where('role', 3)->where('role_request', 4)->first() ;
+
+        Mail::to($qsa->email)->queue(new ChekedRequest($data));
+
+        if($submit){
+            $res = ['status' => 1, 'message' => 'success'] ;
+        }else{
+            $res = ['status' => 0, 'message' => 'failed'] ;
+        }
+
+        return $res ;
+    }
+
+    public function show($id)
+    {
+        return RequestSubmittion::with('RequestHistory','SpecialRequest','SpecialShopAbility','SpecialPersonel',
+                                       'SpecialSheetList','SpecialTools','SpecialPartList','AttachmentResubmit')
+                                 ->find($id);
+    }
+
+    public function importExcel(Request $request)
+    {
+        if($request->hasFile('excelfile')){
+            $path = $request->file('excelfile')->getRealPath();
+            $data = Excel::load($path, function($reader) {})->get();
+
+            if(!empty($data) && $data->count()){
+                foreach ($data->toArray() as $key => $v) {
+                    if(!empty($v)){
+                        if($request->type == 'personel'){
+                            $insert[] = array(
+                                'name' => $v['name'],
+                                'id_number' => $v['id_number'],
+                                'job_title' => $v['job_title'],
+                                'auth_no_stamp_holder' => $v['auth_no_stamp_holder'],
+                                'unit' => $v['unit'],
+                                'scope_competency' => $v['scope_competency'],
+                            );
+                        }
+                        if($request->type == 'sheetlist'){
+                            $insert[] = array(
+                                'category' => $v['category'],
+                                'pd_sheet_number' => $v['pd_sheet_number'],
+                                'desciption' => $v['desciption'],
+                            );
+                        }
+                        if($request->type == 'tools'){
+                            $insert[] = array(
+                                'part_name' => $v['part_name'],
+                                'tool_name' => $v['tool_name'],
+                                'qty' => $v['qty'],
+                                'availability' => $v['availability'],
+                            );
+                        }
+                        if($request->type == 'partlist'){
+                            $insert[] = array(
+                                'part_name' => $v['part_name'],
+                                'example_part_number' => $v['example_part_number'],
+                                'vendor_name' => $v['vendor_name'],
+                            );
+                        }
+                    }
+                }
+                if(!empty($insert)){
+                    return ['status' => 1, 'data' => $insert, 'type' => $request->type] ;
+                }
+            }
+        }
+        return back()->with('error','Please Check your file, Something is wrong there.');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        if($request->type == 'personel'){
+            SpecialPersonel::find($id)->delete() ;
+        }
+
+        if($request->type == 'partlist'){
+            SpecialPartList::find($id)->delete() ;
+        }
+
+        if($request->type == 'sheetlist'){
+            SpecialSheetList::find($id)->delete() ;
+        }
+
+        if($request->type == 'tools'){
+            SpeciTools::find($id)->delete() ;
+        }
+
+        if($request->type == 'delete_request'){
+            RequestSubmittion::find($id)->delete() ;
+        }
+
+        if($request->type == 'note_resubmit'){
+            \App\AttachmentResubmit::find($id)->delete();
+        }
+
+        return 'success' ;
+    }
+
+    public function checked($id)
+    {
+        if(auth::user()->role == 3){
+            $input['status'] = 2 ;
+            $qsa = \App\User::where('role', 4)->where('role_request', 1)->first() ;
+        }
+        if(auth::user()->role == 4){
+            $input['status'] = 3 ;
+            $qsa = \App\User::where('role', 5)->first() ;
+        }
+        $input['checked_name'] = auth::user()->id ;
+        $update = RequestSubmittion::find($id)->update($input) ;
+        $input['request_submittion_id'] = $id ;
+        $input['aproval'] = auth::user()->name ;
+        $data =  RequestSubmittion::with(['RequestHistory','SpecialRequest','SpecialShopAbility','SpecialPersonel',
+                                       'SpecialSheetList','SpecialTools','SpecialPartList'])->find($id) ;
+
+        $input['user_id'] = auth::user()->id ;
+        RequestHistory::create($input);
+
+        Mail::to($qsa->email)->queue(new ChekedRequest($data));
+        Mail::to($data->User->email)->queue(new NotificationUser($data));
+        if($update){
+            $res = ['status' => 1, 'message' => 'success'] ;
+        }else{
+            $res = ['status' => 0, 'message' => 'failed'] ;
+        }
+        return $res;
+    }
+
+    public function reject(Request $request, $id){
+        $input = $request->all() ;
+        if(auth::user()->id == 6){
+            $input['status'] = 8 ;
+        }else{
+            $input['status'] = 6 ;
+        }
+        $input['checked_name'] = null ;
+        $input['status_read'] = null ;
+        $input['aproval'] = auth::user()->name ;
+        $input['request_submittion_id'] = $id ;
+        $update = RequestSubmittion::find($id)->update($input) ;
+
+        $input['user_id'] = auth::user()->id ;
+        $reject = RequestHistory::create($input);
+
+        $data =  RequestSubmittion::with(['RequestHistory','SpecialRequest','SpecialShopAbility','SpecialPersonel',
+                                       'SpecialSheetList','SpecialTools','SpecialPartList'])->find($id) ;
+
+        RequestHistory::find($reject->id)->update(['data' => $data]) ;
+        if(auth::user()->role == 5){
+            Mail::to($qsa->email)->queue(new ChekedRequest($data));
+        }else{
+            Mail::to($data->User->email)->queue(new NotificationUser($data));
+        }
+
+        Mail::to($data->User->email)->queue(new NotificationUser($data));
+        if($reject){
+            $res = ['status' => 1, 'message' => 'success'] ;
+        }else{
+            $res = ['status' => 0, 'message' => 'failed'] ;
+        }
+        return $res;
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $input = $request->all() ;
+        $input['approve_name'] = auth::user()->id ;
+        if(auth::user()->role == 5){
+            $input['status'] = 4 ;
+            $role = 6 ;
+        }
+        if(auth::user()->role == 6){
+            $input['status'] = 5 ;
+            $role = 5;
+        }
+        $qsa = \App\User::where('role', $role )->first() ;
+
+        $input['approve_name'] = auth::user()->id ;
+        $input['request_submittion_id'] = $id ;
+        $input['aproval'] = auth::user()->name ;
+        $update = RequestSubmittion::with(['SpecialRequest'])->find($id) ;
+
+        $config['request_type'] = $update->request_type ;
+        $config['engine_name'] = $update->SpecialRequest->engine_name ;
+        $config['aircraft_type'] = $update->SpecialRequest->aircraft_type ;
+        $config['request_number'] = $update->request_number ;
+        $config['request_submittion_id'] = $update->id ;
+
+        $cek = MasterConfig::where('request_type', $update->request_type)
+                            ->where('aircraft_type', $update->SpecialRequest->aircraft_type )
+                            ->where('engine_name', $update->SpecialRequest->engine_name )
+                            ->count();
+        if($cek == 0){
+            $update->update($input) ;
+            $input['user_id'] = auth::user()->id ;
+            $history = RequestHistory::create($input);
+            $data =  RequestSubmittion::with(['RequestHistory','SpecialRequest','SpecialShopAbility','SpecialPersonel',
+                                           'SpecialSheetList','SpecialTools','SpecialPartList'])->find($id) ;
+
+            RequestHistory::find($history->id)->update(['data' => $data]) ;
+            if(auth::user()->role == 5){
+                Mail::to($qsa->email)->queue(new ChekedRequest($data));
+            }else{
+                Mail::to($data->User->email)->queue(new NotificationUser($data));
+                MasterConfig::create($config);
+            }
+
+            $res = ['status' => 1, 'message' => 'success'] ;
+        }else{
+            $res = ['status' => 0, 'message' => 'already have request', 'request_number' => $update->request_number] ;
+        }
+
+        return $res;
+    }
+
+    public function detail($id){
+        $m = new Merger();
+        $request = RequestSubmittion::with(['RequestHistory','SpecialRequest', 'SpecialPersonel',
+                                            'SpecialTools','SpecialPartList','SpecialPartList'])->find($id) ;
+
+        $pdf = PDF::loadView('detail.request_special', ['request' => $request, 'type' => 'potrait'] )->setPaper('a4', 'portrait');
+        $m->addRaw($pdf->output());
+
+        $pdf = PDF::loadView('detail.request_special',  ['request' => $request, 'type' => 'lanscape'])
+                    ->setOptions(['isPhpEnabled' => true])
+                    ->setPaper('a4', 'landscape');
+        $m->addRaw($pdf->output());
+
+        $pdf = PDF::loadView('detail.request_special',  ['request' => $request, 'type' => 'potrait2'])->setPaper('a4', 'portrait');
+        $m->addRaw($pdf->output());
+        if($request->SpecialRequest->attachment != null){
+            $attachment = explode('|', $request->SpecialRequest->attachment) ;
+            foreach ($attachment as $doc) {
+                $m->addFile('uploads/special/attachment/'.$doc);
+            }
+        }
+
+
+        file_put_contents('document_n_import/special/special.pdf', $m->merge());
+        if(auth::user()->role != 5){
+            return response()->file('document_n_import/special/special.pdf');
+        }else{
+            $data = array('documents' => 'document_n_import/special/special.pdf' , 'id' => $id );
+            return view('decision.Decision', compact('data'));
+        }
+    }
+
+    public function attachment(Request $request)
+    {
+        if ($request->hasFile('file')){
+            $file = $request->file('file');
+            $fileName = time().str_replace(' ','_',$request->file->getClientOriginalName());
+            $extension = $request->file->getClientOriginalExtension();
+            if (!in_array(strtolower($extension), ['pdf']))
+            {
+                return [
+                    'success' => false,
+                    'message' => 'File extension not permitted'
+                ];
+            }
+
+            try {
+                $file->move('uploads/special/attachment/', $fileName);
+            } catch (\Exception $e) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to move file'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'file' => $fileName,
+                'index' => $request->index,
+                'message' => 'OK'
+            ];
+        }
+    }
+
+    public function read($id){
+        if(auth::user()->role == 3 or auth::user()->role == 4 or auth::user()->role == 5 or auth::user()->role == 6){
+            $request = RequestSubmittion::find($id) ;
+            if($request->status_read == null){
+                $input['status_read'] = "|". auth::user()->id ;
+            }else{
+                $cek = explode('|',$request->status_read) ;
+                if (in_array(auth::user()->id ,$cek)) {
+                    $input['status_read'] = $request->status_read ;
+                }else{
+                    $input['status_read'] = $request->status_read."|". auth::user()->id ;
+                }
+            }
+            $request->update($input) ;
+        }
+
+        return 'success';
+    }
+}

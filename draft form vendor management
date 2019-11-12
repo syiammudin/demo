@@ -1,0 +1,714 @@
+<template >
+<div>
+    <div class="col-lg-12  z-index-41" v-if='input.status == undefined || input.status == 0 || input.status == 4 '>
+        <div class="panel panel-default  ">
+            <div class="panel-heading no-border clearfix">
+                <h1 class="page-title">Vendor Management</h1>
+            </div>
+            <div class="panel-body">
+                <ul class="nav nav-tabs">
+                    <li :class="firstForm === true ? 'active' : ''"><a aria-expanded="true" @click="FirstForm()" >Main Form</a></li>
+                    <li :class="secondForm === true ? 'active' : ''"><a aria-expanded="false" @click="SecondForm()">Second Form</a></li>
+                    <li :class="qaevaluation === true ? 'active' : ''"><a aria-expanded="false" @click="QAForm()">QA Evaluation</a></li>
+                </ul>
+                <br>
+                <div class="form-horizontal">
+                    <div v-show='firstForm' class="form-group">
+                        <div class="form-group">
+                            <div class="col-md-12 form-group">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">To </label>
+                                        <div class="col-md-8">
+                                            <input type="text" class="form-control" readonly v-model="input.to = 'QUALITY SYSTEM & AUDITING'">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">From </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Form"  v-model="input.from"> </el-input>
+                                            <span v-if="err.from" class="text-danger"> {{ err.from[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Dept. </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Dept"  v-model="input.dept"> </el-input>
+                                            <span v-if="err.dept" class="text-danger"> {{ err.dept[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Phone </label>
+                                        <div class="col-md-8">
+                                            <el-input type='number' placeholder="Phone" prefix-icon="fa fa-plus"  v-model="input.phone"> </el-input>
+                                            <span v-if="err.phone" class="text-danger"> {{ err.phone[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="title-sub">
+                                <strong>VENDOR</strong>
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Vendor Name </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor Name"  v-model="input.vendor_name"> </el-input>
+                                            <span v-if="err.vendor_name" class="text-danger"> {{ err.vendor_name[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Address (Street)</label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor Address"  v-model="input.vendor_address"> </el-input>
+                                            <span v-if="err.vendor_address" class="text-danger"> {{ err.vendor_address[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">City </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor City"  v-model="input.vendor_city"> </el-input>
+                                            <span v-if="err.vendor_city" class="text-danger"> {{ err.vendor_city[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">State </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor State"  v-model="input.vendor_state"> </el-input>
+                                            <span v-if="err.vendor_state" class="text-danger"> {{ err.vendor_state[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Zip Code </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor Zip Code" type='number'  v-model="input.vendor_zip_code"> </el-input>
+                                            <span v-if="err.vendor_zip_code" class="text-danger"> {{ err.vendor_zip_code[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Vendor Phone </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor Phone" type="number" prefix-icon="fa fa-plus"  v-model="input.vendor_phone"> </el-input>
+                                            <span v-if="err.vendor_phone" class="text-danger"> {{ err.vendor_phone[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Vendor Fax </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Vendor Fax" type="number" prefix-icon="fa fa-plus" v-model="input.vendor_fax"> </el-input>
+                                            <span v-if="err.vendor_fax" class="text-danger"> {{ err.vendor_fax[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Parent Company </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Parent Company"  v-model="input.parent_company"> </el-input>
+                                            <span v-if="err.parent_company" class="text-danger"> {{ err.parent_company[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="title-sub">
+                                <strong>CONTACT</strong>
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Contact Name </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Contact Name"  v-model="input.contact_name"> </el-input>
+                                            <span v-if="err.contact_name" class="text-danger"> {{ err.contact_name[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Contact Email </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Contacts email"  v-model="input.contact_email"> <template slot="prepend">@</template> </el-input>
+                                            <span v-if="err.contact_email" class="text-danger"> {{ err.contact_email[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Contact Title </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Contact Title"  v-model="input.contact_title"> </el-input>
+                                            <span v-if="err.contact_title" class="text-danger"> {{ err.contact_title[0] }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">Supplier Code </label>
+                                        <div class="col-md-8">
+                                            <el-input placeholder="Supplier Code"  v-model="input.supplier_code"> </el-input>
+                                            <span v-if="err.supplier_code" class="text-danger"> {{ err.supplier_code[0] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="line-dashed"></div>
+                        <div class="col-md-12 form-group form-group">
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Applicable Drawing And/Or Specifications </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Applicable Drawing And/Or Specifications "  v-model="input.aplication_drawing"> </el-input>
+                                    <span v-if="err.aplication_drawing" class="text-danger"> {{ err.aplication_drawing[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Item Proposed From Procurement From the Source </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Item Proposed From Procurement From the Source "  v-model="input.item_proposed"> </el-input>
+                                    <span v-if="err.item_proposed" class="text-danger"> {{ err.item_proposed[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Type Of Supplier & Comment </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Type Of Supplier & Comment "  v-model="input.type_supplier"> </el-input>
+                                    <span v-if="err.type_supplier" class="text-danger"> {{ err.type_supplier[0] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-show='secondForm' class="form-group">
+                        <div class="col-md-12 form-group">
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Type Businnes </label>
+                                <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Airline']">
+                                        <label for="checkbox6">Airline </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['Supplier']">
+                                        <label for="checkbox6">Supplier </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Certificate Repair Station']">
+                                        <label for="checkbox6">Certificate Repair Station' </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['Machine Welding']">
+                                        <label for="checkbox6">Machine Welding </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Original Equipment Manufacturer']">
+                                        <label for="checkbox6">Original Equipment Manufacturer </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['Fabricator']">
+                                        <label for="checkbox6">Fabricator </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Plating / Special Process']">
+                                        <label for="checkbox6">Plating / Special Process </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['Calibration Lab']">
+                                        <label for="checkbox6">Calibration Lab </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Accessory / Repair']">
+                                        <label for="checkbox6">Accessory / Repair </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['GSE']">
+                                        <label for="checkbox6">CGSE </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['NDI / NDT']">
+                                        <label for="checkbox6">NDI / NDT </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox"  class="form-control"  v-model="type_bussines['Others']">
+                                        <label for="checkbox6">Others </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-control" v-model="type_bussines['Distibutor']">
+                                        <label for="checkbox6">Distibutor </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Age Organization </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Age Organization  "  v-model="input.age_organization"> </el-input>
+                                    <span v-if="err.age_organization" class="text-danger"> {{ err.age_organization[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Total Employee </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Total Employee " type='number' v-model="input.total_employee"> </el-input>
+                                    <span v-if="err.total_employee" class="text-danger"> {{ err.total_employee[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Total Supervisors </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Total Supervisors " type='number' v-model="input.total_supervisors"> </el-input>
+                                    <span v-if="err.total_supervisors" class="text-danger"> {{ err.total_supervisors[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Total Inspecors </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Total Inspecors " type='number' v-model="input.total_inspectors"> </el-input>
+                                    <span v-if="err.total_inspectors" class="text-danger"> {{ err.total_inspectors[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Total Personel </label>
+                                <div class="col-md-9">
+                                    <el-input placeholder="Total Personel " type='number' v-model="input.total_personel"> </el-input>
+                                    <span v-if="err.total_personel" class="text-danger"> {{ err.total_personel[0] }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Name of Approval</label>
+                                <div class="col-md-9">
+                                    <table class="table table-striped" >
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Designation</th>
+                                                <th>Stamp</th>
+                                                <th><el-button @click="addNameApproval()"  size="mini" icon="fa fa-plus" round ></el-button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="d,i in list_name_aproval">
+                                                <td> <input type="text" class="form-control" v-model='d.name'>  </td>
+                                                <td> <input type="text" class="form-control" v-model='d.designation'>  </td>
+                                                <td> <input type="text" class="form-control" v-model='d.stamp'>  </td>
+                                                <td> <a @click="delNameApproval(d, i)"><i class="fa fa-trash"></i></a> </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">List Customer</label>
+                                <div class="col-md-9">
+                                    <table class="table table-striped" >
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th><el-button @click="addCustomer()"  size="mini" icon="fa fa-plus" round ></el-button></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="d,i in list_customers">
+                                                <td> <input type="text" class="form-control" v-model='d.name_customer'>  </td>
+                                                <td> <a @click="delCustomer(d, i)"><i class="fa fa-trash"></i></a> </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">List Current Capability</label>
+                                <div class="col-md-9">
+                                    <el-upload class="upload-demo" :action="url + '/upload'"
+                                        :on-success="uploadSuccess" :show-file-list="false"    >
+                                        <el-button size="mini" type="primary"><i class="fa fa-file"></i> Upload</el-button>
+                                    </el-upload>
+                                    <ul>
+                                        <li v-for="d, i in list_curent_capability">{{ d.name_document }} - <a @click="delCurrentCapability(i)"><i class="fa fa-trash"></i> </a> </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Representative in Indonesia</label>
+                                <div class="col-md-9"> <input type="text" class="form-control" v-model="input.representative_indonesia">  </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Documentari Evidence</label>
+                                <div class="col-sm-9 checkbox checkbox-replace checkbox-success">
+
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['Indonesia DGCA']">
+                                        <label for="checkbox6">Indonesia DGCA Certificate </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['FAA']">
+                                        <label for="checkbox6">FAA Certificate </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['EASA']">
+                                        <label for="checkbox6">EASA Certificate </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['EASO']">
+                                        <label for="checkbox6">EASO Certificate </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['ASSA']">
+                                        <label for="checkbox6">ASSA Certificate </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['Calibration Lab']">
+                                        <label for="checkbox6">Calibration Lab Certificate</label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['OEM']">
+                                        <label for="checkbox6">OEM</label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['STC / TSOA']">
+                                        <label for="checkbox6">STC / TSOA</label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['Current Capability List']">
+                                        <label for="checkbox6">Current Capability List</label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['Inspection Procedural Manual']">
+                                        <label for="checkbox6">Inspection Procedural Manual/ Exposition Manual /Quality Procedure manual/Quality Manual </label>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="checkbox" class="form-control" v-model="document_evidence['Other']">
+                                        <label for="checkbox6">Other</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Date Las Audit</label>
+                                <div class="col-md-9">
+                                    <el-date-picker v-model="input.date_audit" type="date" placeholder="Check Period" value-format="yyyy-MM-dd">
+                                    </el-date-picker>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-show='qaevaluation' class="form-group">
+                        <div class="col-md-12 form-group" style="padding-left:30px;">
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Is your organization in any way approved by Indonesian DGCA, FAA, EASA, any others
+                                    National Civil Aviation Authority or International/National Accreditation Body e.g.:
+                                    LBA, Bureau Verieties, etc. <br>
+                                    If Yes, Specify
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_organization'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Do you have a Quality Assurance Program. If yes, is it the form of written Procedure ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_quality_assurance'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Is your QA system bases upon military, National, or International Quality system standards ? If applicable, indicate which of the following were in practice.
+                                    <br>
+                                    (MIL-STD-9858A,
+                                    MIL-I-45206A,
+                                    ASQC-C1 Series(American),
+                                    Can 3-x 299, Cat. 1 through 4 (Canadian),
+                                    BS5750, Parts 1 through 4 (British),
+                                    AS1821, 1822, 1823 (Australian),
+                                    ISO/DIS 9000 (All levels) (International Standards Organization),
+                                    ISO/IEC 17025:2005,
+                                    ANSI/NCSL Z540-1:1994,
+                                    AQAP-1,-4,-9(NATO),
+                                    Others:(specify))
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_qa_system'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Indicate your source/s of supply : <br>
+                                    (Original Equipment Manufacturer's (OEM),
+                                    OEM-Licensed sub-contractors,
+                                    Alternate source vendors approved by OEM,
+                                    PMA-Approved sources,
+                                    Sources as defined in Military Qualified,
+                                    Products List (for AN, MS, NAS standards),
+                                    Surplus Airline Inventory,
+                                    Other industry source )
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_indicate_supply'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Are all Part inspected upon receipt ? <br>
+                                    An reinpected prior to shipment ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_part_inspection'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Do you maintened any quality records or rating on your suppliers ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_maintain_quality'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Do you have a program to re-certify your stock of routable and repairable periodically ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_program_recertify'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Do you have shelf life control policies and procedure ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_control_policies'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Do you maintain trace-ability of all parts ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_trace_ability'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    (for suppliers in the USA only) <br>
+                                    Can you provide a material certification for new parts like the example below  <br>
+                                    All part covered by this document were produced by a manufacturer holding a FAA approved production inspection system issued under FAR 21, sub-part F, or sub-part G <br>
+                                    there parts were produced by the prima manufacturer. None of these parts have been subjected to reverse stress or heat and unless otherwise stated are new and unused. (or words to that effect)
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_for_usa_only'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    can you provide the folowing should need arise ? <br>
+                                    your Purchase Order, use to acquire the part.
+                                    Repair Order, if applicable.
+                                    Part incoming certificate/serviceable tag, or invoice from tour supplier. Factory/Manufacturing Certificate (for fasteners).
+                                    Any other documents tracing back the birth history of the part.
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_provide'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-md-10 text-left">
+                                    Does Your company implement Safety Management System (SMS) ?
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-control" v-model='input.evaluation_implement_sms'>
+                                        <option v-for="d in qa" :value="d.id">{{ d.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="line-dashed"></div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-10">
+                            <button class="btn btn-primary" @click="save()" >Save to Draft</button>
+                            <!-- <button class="btn btn-danger" @click="cancel" >Cancel</button> -->
+                            <button class="btn btn-danger" @click="cancel()">Cancel </button>
+                            <button class="btn btn-success" @click="submit()" >Save And Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+<script>
+export default {
+    props : ['type'] ,
+    data() {
+        return {
+            url : BASE_URL + 'submit_vendor', base_url : BASE_URL,
+            data : [],
+            input : {} , firstForm : true, secondForm : false , qaevaluation : false ,
+            list_name_aproval : [] , list_customers : [], list_curent_capability : [],
+            qa : [{ 'id' : 0 , 'name' : 'N/A' }, { 'id' : 1 , 'name' : 'Yes' },{ 'id' : 2 , 'name' : 'No' }] ,
+            type_bussines : {}, err : [], document_evidence : {} ,
+        }
+    },
+    mounted(){
+        this.getData()
+    },
+    methods : {
+        getData(){
+            if (this.type != 0) {
+                axios.get(this.url+'/'+this.type).then((res) => {
+                    this.input = res.data
+                    this.list_name_aproval = JSON.parse(res.data.list_name_aproval)
+                    this.list_customers = JSON.parse(res.data.list_customers)
+                    this.list_curent_capability = JSON.parse(res.data.list_curent_capability)
+                    this.type_bussines = JSON.parse(res.data.type_bussines)
+                    this.document_evidence = JSON.parse(res.data.document_evidence)
+                })
+                .catch((err) => {
+
+                })
+            }
+        },
+        cancel(){
+            this.$router.push('/vendor_management');
+            thit.input = {}
+        },
+        save(){
+            this.input.list_name_aproval = JSON.stringify(this.list_name_aproval)
+            this.input.list_customers = JSON.stringify(this.list_customers)
+            this.input.list_curent_capability = JSON.stringify(this.list_curent_capability)
+            this.input.type_bussines = JSON.stringify(this.type_bussines)
+            this.input.document_evidence = JSON.stringify(this.document_evidence)
+            const loading = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(0, 0, 0, 0.7)' });
+            axios.post(this.url, this.input).then((res) => {
+                console.log(res.data)
+                if(res.data.status == 1 ){
+                    this.$router.push('/vendor_management');
+                    loading.close()
+                }else{
+                    loading.close()
+                    this.$alert('Failed to Save', 'Warning', {
+                        confirmButtonText: 'OK',
+                    });
+                }
+            })
+            .catch((error) => {
+                loading.close()
+                this.err = error.response.data.errors; loading.close()
+            })
+        },
+        submit(){
+            this.input.list_name_aproval = JSON.stringify(this.list_name_aproval)
+            this.input.list_customers = JSON.stringify(this.list_customers)
+            this.input.list_curent_capability = JSON.stringify(this.list_curent_capability)
+            this.input.type_bussines = JSON.stringify(this.type_bussines)
+            const loading = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(0, 0, 0, 0.7)' });
+            axios.post(this.url+'/submit', this.input).then((res) => {
+                console.log(res.data)
+                if(res.data.status == 1 ){
+                    this.$router.push('/vendor_management');
+                    loading.close()
+                }else{
+                    loading.close()
+                    this.$alert('Failed to Save', 'Warning', {
+                        confirmButtonText: 'OK',
+                    });
+                }
+            })
+            .catch((err) => {
+                loading.close()
+
+            })
+        },
+        uploadSuccess(response, file, fileList) {
+            if(response.success == true){
+                this.list_curent_capability.push({
+                    name_document : response.file
+                })
+            }else{
+                this.$message.error(response.message);
+            }
+        },
+        delCurrentCapability(i)
+        {
+            this.list_curent_capability.splice(i, 1)
+        },
+        FirstForm(){
+            this.secondForm = false
+            this.firstForm = true
+            this.qaevaluation = false
+        },
+        SecondForm(){
+            this.secondForm = true
+            this.firstForm = false
+            this.qaevaluation = false
+        },
+        QAForm(){
+            this.qaevaluation = true
+            this.firstForm = false
+            this.secondForm = false
+        },
+        addNameApproval(){
+            this.list_name_aproval.push ({
+                name : '',
+                designation : '',
+                stamp : '',
+            })
+        },
+        delNameApproval(d, i){
+            this.list_name_aproval.splice(i, 1)
+        },
+        addCustomer(){
+            this.list_customers.push ({
+                name_customer : '',
+            })
+        },
+        delCustomer(d, i){
+            this.list_customers.splice(i, 1)
+        },
+
+    }
+}
+</script>
+
+<style lang="css">
+.title-sub{
+    text-align:center; border-bottom : 1px dashed #DDD; margin-left: 100px; margin-right: 100px; margin-bottom: 20px;
+}
+</style>
