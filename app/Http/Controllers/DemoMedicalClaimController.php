@@ -12,7 +12,17 @@ use Auth ;
 class DemoMedicalClaimController extends Controller
 {
   public function index(Request $request){
-      return MedicalClaim::with('RequestHistory','User')->paginate($request->pageSize) ;
+      return MedicalClaim::with('RequestHistory','User')
+              ->when(auth()->user()->role == 2, function($q) {
+                  return $q->where('user_id', auth()->user()->id) ;
+              })
+              ->when(auth()->user()->role == 3, function($q) {
+                  return $q->where('status', 1) ;
+              })
+              ->when(auth()->user()->role == 4, function($q) {
+                  return $q->where('status', 2) ;
+              })
+              ->paginate($request->pageSize) ;
   }
 
   public function show($id){

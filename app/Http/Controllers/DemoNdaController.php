@@ -13,7 +13,17 @@ use Auth ;
 class DemoNdaController extends Controller
 {
   public function index(Request $request){
-      return Nda::with('VendorManagementHistory','User')->paginate($request->pageSize) ;
+      return Nda::with('VendorManagementHistory','User')
+            ->when(auth()->user()->role == 2, function($q) {
+                return $q->where('user_id', auth()->user()->id) ;
+            })
+            ->when(auth()->user()->role == 3, function($q) {
+                return $q->where('status', 1) ;
+            })
+            ->when(auth()->user()->role == 4, function($q) {
+                return $q->where('status', 2) ;
+            })
+            ->paginate($request->pageSize) ;
   }
 
   public function show($id){
