@@ -105,10 +105,10 @@ class LoginController extends Controller
                       return redirect($link);
                     }
                  }else{
-                     return redirect()->back()->withErrors(['error' => 'Your user not yet to register, please register first using LDAP ACCOUNT']);
+                     return redirect()->back()->withErrors(['error' => 'Username and Password not match']);
                  }
              }else{
-                 return redirect()->back()->withErrors(['error' => 'Your user not yet to register, please register first using LDAP ACCOUNT']);
+                 return redirect()->back()->withErrors(['error' => 'Username and Password not match']);
              }
          }
      }

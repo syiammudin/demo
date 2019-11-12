@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>QAPPS GMF AEROASIA</title>
+      <title>Corner Stone Application</title>
     <link rel='shortcut icon' type='image/x-icon' href='images/favicon.ico' />
     <link href="{{ asset('theme/css/entypo.css')}}" rel="stylesheet">
     <link href="{{ asset('theme/css/font-awesome.min.css')}}" rel="stylesheet">
