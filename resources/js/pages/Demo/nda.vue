@@ -41,7 +41,7 @@
                                     <i class="fa fa-angle-double-down"></i>
                                   </span>
                                   <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item v-if='role != 1 && (scope.row.status > 0 && scope.row.status < 3)'>
+                                    <el-dropdown-item v-if='role == 1 && (scope.row.status > 0 && scope.row.status < 3)'>
                                       <a ><i class="fa fa-times"></i> Nothing Action </a>
                                     </el-dropdown-item>
                                     <a @click="checked(scope.row.id)">
