@@ -69,6 +69,7 @@ class DemoNdaController extends Controller
     }
     if(auth::user()->role == 4){
       $input['status'] = 3 ;
+      $input['completion'] = 1 ;
     }
     if(auth::user()->role == 5){
       $input['status'] = 4 ;

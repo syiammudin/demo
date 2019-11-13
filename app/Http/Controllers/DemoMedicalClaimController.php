@@ -22,6 +22,7 @@ class DemoMedicalClaimController extends Controller
               ->when(auth()->user()->role == 4, function($q) {
                   return $q->where('status', 2) ;
               })
+              ->orderBy('completion','asc')->orderBy('id','desc')
               ->paginate($request->pageSize) ;
   }
 
@@ -71,6 +72,7 @@ class DemoMedicalClaimController extends Controller
     }
     if(auth::user()->role == 4){
       $input['status'] = 3 ;
+      $input['completion'] = 1 ;
     }
     if(auth::user()->role == 5){
       $input['status'] = 4 ;
